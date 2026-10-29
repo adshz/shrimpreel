@@ -15,6 +15,8 @@
   "vars": {
     "APP_ENV": "development",
     "SITE_URL": "http://localhost:3000",
+    // 是否允许搜索引擎收录：正式站 true（robots.txt 放行并声明 sitemap），预发 false（Disallow 加 X-Robots-Tag: noindex）。上线时和 APP_ENV 一起改，doctor 核对
+    "INDEXABLE": "false",
     // waffo | dodo | stripe | mock（mock 只允许非 production）
     "PAYMENT_PROVIDER": "mock",
     // fal | yir | nanoapi | mock（mock 只允许非 production）

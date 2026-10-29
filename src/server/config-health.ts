@@ -79,6 +79,11 @@ export function checkConfig(input: ConfigInput): ConfigIssue[] {
     error('APP_ENV', `APP_ENV=${appEnv || '(空)'}：上线必须是 production（预发用 staging），否则 Cookie 不带 Secure，mock 和开发登录不会被拦截`)
   }
 
+  // INDEXABLE 决定 robots.txt 和 X-Robots-Tag：正式站必须 true，预发必须 false（见 util.ts 的 isIndexable）
+  const indexable = vars('INDEXABLE')
+  if (production && indexable !== 'true') error('INDEXABLE', `INDEXABLE=${indexable || '(空)'}：正式站必须是 true，否则 robots.txt 禁止抓取、所有响应带 noindex，网站不会被收录`)
+  if (appEnv === 'staging' && indexable === 'true') error('INDEXABLE', 'INDEXABLE=true：预发必须是 false，否则会和正式站内容重复收录')
+
   const siteUrl = vars('SITE_URL')
   const host = hostOf(siteUrl)
   if (!host || !siteUrl.startsWith('https://')) {

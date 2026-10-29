@@ -181,9 +181,20 @@ export const site = {
   seo: {
     // 长尾词：不输出 meta keywords（Google 不用），由 npm run seo:check 检查首页正文是否覆盖
     secondaryKeywords: ['Neon Shuffle AI', 'Neon Shuffle video', 'Neon Shuffle trend', 'AI dance video'],
-    // 首次上线日期与站点页面（首页、价格、法律页等）最近一次内容更新日期：首页视频 uploadDate、sitemap lastmod。文章用各自的日期
+    // 首次上线日期：首页视频 uploadDate
     publishedAt: '2026-10-20',
-    updatedAt: '2026-10-20',
+    // 每个非文章页面正文最近一次真实改动的日期，sitemap lastmod 读这里（文章用各自的 updatedAt，/guides 随最新文章）。
+    // 只在改了该页正文时手改对应一项；不要写成部署日，也不要每次部署都变，谷歌发现不准就会忽略 lastmod。
+    // tests/unit/seo-env.test.ts 核对：每个公开页面都有一项，且不晚于今天
+    pageUpdatedAt: {
+      '/': '2026-10-20',
+      '/pricing': '2026-10-20',
+      '/contact': '2026-10-20',
+      '/report': '2026-10-20',
+      '/privacy-policy': '2026-10-20',
+      '/terms-of-service': '2026-10-20',
+      '/refund-policy': '2026-10-20',
+    } as Record<string, string>,
     // Search Console / Bing Webmaster 选“HTML 标记”验证时填 content 值；用 DNS 验证则留空
     googleVerification: '',
     bingVerification: '',
@@ -311,6 +322,12 @@ export const ARTICLES: readonly Article[] = site.articles
 
 export function findArticle(slug: string) {
   return ARTICLES.find((a) => a.slug === slug)
+}
+
+// 日期转完整 ISO 8601 时间戳（UTC 零点）。sitemap lastmod、Article 的 datePublished/dateModified、article:*_time 都用它，
+// 三处同值；页面上显示的“最后更新”是同一天。源数据仍写 YYYY-MM-DD，不要手写时间部分
+export function isoTimestamp(date: string) {
+  return `${date}T00:00:00+00:00`
 }
 
 export function articlePath(key: ArticleKey) {

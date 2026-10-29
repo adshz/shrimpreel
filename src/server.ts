@@ -8,7 +8,7 @@ import { runNotificationCron } from './server/notifications'
 import { isSeoPath } from './server/seo'
 import { SHARE_PAGE, loadShare, shareHttpStatus } from './server/shares'
 import { handleUmamiProxy } from './server/umami'
-import { isProduction } from './server/util'
+import { isProduction, shouldNoindex } from './server/util'
 import type { VideoJobMessage } from './server/types'
 
 // mock 收银台页面（/checkout/mock、/zh/checkout/mock）：生产环境它调用的接口都是 404，页面本身也不该能打开
@@ -91,6 +91,7 @@ function withSecurityHeaders(response: Response, env: Env, url: URL, nonce?: str
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     if (!headers.has(key)) headers.set(key, value)
   }
+  if (shouldNoindex(env) && !headers.has('X-Robots-Tag')) headers.set('X-Robots-Tag', 'noindex, nofollow')
   // CSP 只对页面下发（Report-Only 阶段，见 server/csp.ts）；API、媒体和 sitemap 不是 HTML，不需要
   if (nonce && headers.get('Content-Type')?.startsWith('text/html')) {
     headers.set('Content-Security-Policy-Report-Only', contentSecurityPolicy(nonce))

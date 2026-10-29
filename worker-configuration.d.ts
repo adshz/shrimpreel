@@ -13,6 +13,7 @@ interface __BaseEnv_Env {
 	ASSETS: Fetcher;
 	APP_ENV: string;
 	SITE_URL: string;
+	INDEXABLE: string;
 	PAYMENT_PROVIDER: string;
 	VIDEO_PROVIDER: string;
 	ADMIN_EMAILS: string;
@@ -47,7 +48,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "APP_ENV" | "SITE_URL" | "PAYMENT_PROVIDER" | "VIDEO_PROVIDER" | "ADMIN_EMAILS" | "EMAIL_FROM" | "WAFFO_ENVIRONMENT" | "DODO_ENVIRONMENT" | "STRIPE_ENVIRONMENT" | "STRIPE_PRODUCTS" | "GOOGLE_CLIENT_ID" | "TURNSTILE_SITE_KEY" | "UMAMI_ORIGIN" | "MODERATION_PROVIDER" | "SESSION_SECRET" | "GOOGLE_CLIENT_SECRET" | "WAFFO_MERCHANT_ID" | "WAFFO_PRIVATE_KEY" | "DODO_API_KEY" | "DODO_WEBHOOK_SECRET" | "FAL_KEY" | "WAFFO_PRODUCTS" | "DODO_PRODUCTS" | "WAFFO_STORE_ID">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "APP_ENV" | "SITE_URL" | "INDEXABLE" | "PAYMENT_PROVIDER" | "VIDEO_PROVIDER" | "ADMIN_EMAILS" | "EMAIL_FROM" | "WAFFO_ENVIRONMENT" | "DODO_ENVIRONMENT" | "STRIPE_ENVIRONMENT" | "STRIPE_PRODUCTS" | "GOOGLE_CLIENT_ID" | "TURNSTILE_SITE_KEY" | "UMAMI_ORIGIN" | "MODERATION_PROVIDER" | "SESSION_SECRET" | "GOOGLE_CLIENT_SECRET" | "WAFFO_MERCHANT_ID" | "WAFFO_PRIVATE_KEY" | "DODO_API_KEY" | "DODO_WEBHOOK_SECRET" | "FAL_KEY" | "WAFFO_PRODUCTS" | "DODO_PRODUCTS" | "WAFFO_STORE_ID">> {}
 }
 declare module "*.txt" {
 	const value: string;

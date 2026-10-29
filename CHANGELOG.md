@@ -4,6 +4,19 @@ Notable changes to the template. Derived sites pick them up with `git merge` fro
 
 中文说明在每条下方。
 
+## 2026-10-29
+
+### Changed: `INDEXABLE` switch, noindex header on staging, per-page sitemap lastmod
+
+- **New var `INDEXABLE`** (`"true"` / `"false"`, in both `wrangler.jsonc` and `wrangler.staging.jsonc`). A site is indexable only when `INDEXABLE=true` **and** `APP_ENV=production`; this drives `robots.txt` (Allow plus the `Sitemap:` line, otherwise `Disallow: /`). `doctor` and the admin config card now error if production is not `true` or staging is not `false`. The template ships `false` because its `APP_ENV` is still `development`; flip it to `true` together with `APP_ENV` when a site goes live.
+- **Staging responses carry `X-Robots-Tag: noindex, nofollow`.** `robots.txt` `Disallow` only stops crawling; a URL linked from elsewhere can still be indexed. Production and local dev do not send it.
+- **sitemap `lastmod` is per page.** `site.seo.updatedAt` is replaced by `site.seo.pageUpdatedAt` (a map from path to `YYYY-MM-DD`); a missing path throws. Articles keep their own `updatedAt`, `/guides` follows the newest article. Edit an entry only when that page's body really changed, never on deploy.
+- **ISO timestamps.** `lastmod`, `datePublished`/`dateModified`, `article:*_time` and the home video `uploadDate` use `isoTimestamp()` (`YYYY-MM-DDT00:00:00+00:00`), so the sitemap, the Article schema and the date shown on the page agree.
+
+Upgrading a site: merge upstream, add `INDEXABLE` to both wrangler files (`true` for production, `false` for staging), replace `site.seo.updatedAt` with a `pageUpdatedAt` entry for each non-article public page. No secrets or migrations.
+
+调整：新增 `INDEXABLE` 开关、预发加 noindex 响应头、sitemap lastmod 逐页取值。`INDEXABLE`（`"true"` / `"false"`，写在两份 wrangler 的 vars 里）与 `APP_ENV=production` 同时满足才允许收录，决定 robots.txt 放行（含 `Sitemap:` 行）还是整站 Disallow；doctor 和后台配置卡片会在正式站不是 true、预发不是 false 时报错。模板的 `APP_ENV` 还是 development，所以默认 `false`，站点上线时和 `APP_ENV` 一起改成 `true`。预发所有响应带 `X-Robots-Tag: noindex, nofollow`（robots 的 Disallow 只防抓取、不防收录）。`site.seo.updatedAt` 换成 `site.seo.pageUpdatedAt`（路径 → 日期，缺项直接报错）；文章仍用各自的 `updatedAt`。lastmod、Article 的 datePublished/dateModified、`article:*_time`、首页视频 uploadDate 统一用 `isoTimestamp()` 输出完整 ISO 时间戳，三处同值。站点升级：合并 upstream，在两份 wrangler 里加 `INDEXABLE`，把 `site.seo.updatedAt` 换成每个非文章页面一项的 `pageUpdatedAt`。没有新增密钥和迁移。
+
 ## 2026-10-27
 
 ### Changed: article covers get a headline, a tag and layouts

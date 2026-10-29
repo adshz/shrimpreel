@@ -16,6 +16,7 @@
 
 | 名称 | 取值 | 上线必填 | 说明 |
 | --- | --- | --- | --- |
+| `INDEXABLE` | `true`、`false` | 是 | 是否允许搜索引擎收录：正式站 `true`，预发 `false`。决定 robots.txt（`true` 时放行并声明 sitemap，否则整站 Disallow）和预发响应上的 `X-Robots-Tag: noindex`。要同时满足 `APP_ENV=production` 才放行；doctor 核对正式站为 true、预发为 false |
 | `APP_ENV` | `development`、`staging`、`production` | 是 | production 和 staging 下禁用 mock 服务商、开发登录和 `/api/dev/*`，Cookie 加 `Secure`。只有 production 允许搜索引擎抓取 |
 | `SITE_URL` | `https://<domain>` | 是 | 用于 canonical、sitemap、邮件链接、视频服务商回调地址和 CSRF 同源校验。production 下要和 `site.domain` 是同一个站点 |
 | `PAYMENT_PROVIDER` | `waffo`、`dodo`、`stripe`、`mock` | 是 | 新订单用哪个支付商。旧订单的退款和查单仍找原来的支付商。`mock` 只能在本地使用 |

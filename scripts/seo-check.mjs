@@ -110,7 +110,12 @@ export async function runSeoCheck({ base = 'http://127.0.0.1:3000', production =
     }
     if (dates.updatedAt < dates.publishedAt) cfg('error', `${label}.updatedAt 早于 publishedAt`)
   }
-  checkDates('site.seo', site.seo)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(site.seo.publishedAt)) cfg('error', 'site.seo.publishedAt 不是 YYYY-MM-DD', site.seo.publishedAt)
+  for (const [path, value] of Object.entries(site.seo.pageUpdatedAt)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) cfg('error', `site.seo.pageUpdatedAt[${path}] 不是 YYYY-MM-DD`, value)
+    else if (value > today) cfg('warn', `site.seo.pageUpdatedAt[${path}] 晚于今天`, value)
+    else if (value < site.seo.publishedAt) cfg('error', `site.seo.pageUpdatedAt[${path}] 早于 publishedAt`, value)
+  }
   const reservedSlugs = new Set(['guides', 'pricing', 'contact', 'report', 'privacy-policy', 'terms-of-service', 'refund-policy', 'sign-in', 'dashboard', 'checkout', 'admin', 'api', ...LOCALES])
   const seenSlugs = new Set()
   for (const article of ARTICLES) {

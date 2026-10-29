@@ -20,6 +20,7 @@
     "APP_ENV": "staging",
     // 部署前把 SUBDOMAIN 换成账号的 workers.dev 子域名（Dashboard → Workers & Pages 右侧可见）
     "SITE_URL": "https://video-template-staging.SUBDOMAIN.workers.dev",
+    "INDEXABLE": "false",
     "PAYMENT_PROVIDER": "waffo",
     "VIDEO_PROVIDER": "fal",
     "ADMIN_EMAILS": "admin@example.com",

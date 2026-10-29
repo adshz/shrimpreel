@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { ARTICLES, DEFAULT_LOCALE, LOCALES, STYLES, formatPrice, localePath, sellingPlans, site } from '#/config/site'
+import { ARTICLES, DEFAULT_LOCALE, LOCALES, STYLES, formatPrice, isoTimestamp, localePath, sellingPlans, site } from '#/config/site'
 import { absoluteUrl, loadContent } from '#/lib/i18n'
 import type { AppContext } from './types'
 import { isIndexable } from './util'
@@ -19,12 +19,14 @@ const ARTICLE_PATHS = ARTICLES.map((article) => `/${article.slug}`)
 // 可被索引的公开页面（账户、结账、后台页都带 noindex，不进 sitemap）
 export const PUBLIC_PATHS = ['/', '/pricing', '/guides', '/contact', '/report', '/privacy-policy', '/terms-of-service', '/refund-policy', ...ARTICLE_PATHS]
 
-// lastmod 按页面取：文章用各自的 updatedAt，/guides 随最新文章变化，其余页面用 site.seo.updatedAt
-function lastModified(path: string) {
+// lastmod 按页面取：文章用各自的 updatedAt（与 Article 的 dateModified、页面上的“最后更新”同一个值），/guides 随最新文章变化，其余页面查 site.seo.pageUpdatedAt
+export function lastModified(path: string) {
   const article = ARTICLES.find((a) => `/${a.slug}` === path)
   if (article) return article.updatedAt
-  if (path === '/guides') return [site.seo.updatedAt, ...ARTICLES.map((a) => a.updatedAt)].sort().at(-1)!
-  return site.seo.updatedAt
+  if (path === '/guides') return ARTICLES.map((a) => a.updatedAt).sort().at(-1)!
+  const date = site.seo.pageUpdatedAt[path]
+  if (!date) throw new Error(`site.seo.pageUpdatedAt 缺少 ${path}`)
+  return date
 }
 
 function escapeXml(value: string) {
@@ -39,7 +41,7 @@ seoRoutes.get('/sitemap.xml', (c) => {
         ...LOCALES.map((alt) => `<xhtml:link rel="alternate" hreflang="${alt}" href="${escapeXml(absoluteUrl(localePath(alt, path)))}"/>`),
         `<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(localePath(DEFAULT_LOCALE, path)))}"/>`,
       ].join('')
-      return `<url><loc>${escapeXml(absoluteUrl(localePath(locale, path)))}</loc><lastmod>${lastModified(path)}</lastmod>${alternates}</url>`
+      return `<url><loc>${escapeXml(absoluteUrl(localePath(locale, path)))}</loc><lastmod>${isoTimestamp(lastModified(path))}</lastmod>${alternates}</url>`
     }),
   )
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
