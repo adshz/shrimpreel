@@ -13,6 +13,7 @@ const sandboxSiteUrl = process.env.SANDBOX_SITE_URL
 const LOCAL_DEV_VARS = {
   APP_ENV: 'development',
   SITE_URL: 'http://localhost:3000',
+  INDEXABLE: 'false',
   PAYMENT_PROVIDER: 'mock',
   VIDEO_PROVIDER: 'mock',
   MODERATION_PROVIDER: 'mock',

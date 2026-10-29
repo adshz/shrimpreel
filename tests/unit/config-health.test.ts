@@ -14,6 +14,7 @@ function ready(overrides: { vars?: Record<string, string>; secrets?: ConfigInput
     vars: {
       APP_ENV: 'production',
       SITE_URL: 'https://moonhop.ai',
+      INDEXABLE: 'true',
       PAYMENT_PROVIDER: 'waffo',
       VIDEO_PROVIDER: 'fal',
       MODERATION_PROVIDER: 'openai',
@@ -64,6 +65,13 @@ describe('checkConfig', () => {
     expect(keys(ready({ secrets: { SESSION_SECRET: true } }))).toEqual([])
   })
 
+  it('INDEXABLE：正式站必须 true，预发必须 false', () => {
+    expect(keys(ready({ vars: { INDEXABLE: 'false' } })).includes('error:INDEXABLE')).toBe(true)
+    expect(keys(ready({ vars: { INDEXABLE: '' } })).includes('error:INDEXABLE')).toBe(true)
+    expect(keys(ready({ vars: { APP_ENV: 'staging', INDEXABLE: 'true' } })).includes('error:INDEXABLE')).toBe(true)
+    expect(keys(ready({ vars: { APP_ENV: 'staging', INDEXABLE: 'false' } })).some((k) => k.endsWith(':INDEXABLE'))).toBe(false)
+  })
+
   it('开发默认值：APP_ENV、本地地址、mock 服务商都报错', () => {
     const input = ready({
       vars: { APP_ENV: 'development', SITE_URL: 'http://localhost:3000', PAYMENT_PROVIDER: 'mock', VIDEO_PROVIDER: 'mock', MODERATION_PROVIDER: 'mock' },
@@ -78,7 +86,7 @@ describe('checkConfig', () => {
     expect(keys(ready({ vars: { WAFFO_PRODUCTS: '["PROD_1"]' } }))).toContain('error:WAFFO_PRODUCTS')
     expect(keys(ready({ vars: { WAFFO_PRODUCTS: '{oops' } }))).toContain('error:WAFFO_PRODUCTS')
     expect(keys(ready({ vars: { WAFFO_ENVIRONMENT: 'test' } }))).toEqual(['warn:WAFFO_ENVIRONMENT'])
-    const staging = ready({ vars: { APP_ENV: 'staging', SITE_URL: 'https://shrimp-staging.dev-team.workers.dev' } })
+    const staging = ready({ vars: { APP_ENV: 'staging', INDEXABLE: 'false', SITE_URL: 'https://shrimp-staging.dev-team.workers.dev' } })
     expect(keys(staging)).toEqual(['warn:WAFFO_ENVIRONMENT'])
   })
 
@@ -203,7 +211,7 @@ describe('doctor', () => {
       ...deployable(),
       name: 'shrimp-staging',
       routes: undefined,
-      vars: { ...deployable().vars, APP_ENV: 'staging', WAFFO_ENVIRONMENT: 'test', SITE_URL: 'https://shrimp-staging.dev-team.workers.dev' },
+      vars: { ...deployable().vars, APP_ENV: 'staging', INDEXABLE: 'false', WAFFO_ENVIRONMENT: 'test', SITE_URL: 'https://shrimp-staging.dev-team.workers.dev' },
     }
     expect(doctorKeys(staging)).toEqual([])
     expect(doctorKeys({ ...staging, vars: { ...staging.vars, SITE_URL: 'https://other-staging.dev-team.workers.dev' } })).toEqual(['error:SITE_URL'])
@@ -221,7 +229,7 @@ describe('doctor', () => {
     expect(todos.map((t) => `${t.file}:${t.line}`)).toEqual(['src/config/site.ts:2', 'src/content/en.ts:1'])
 
     expect(doctorKeys(deployable(), { siteTodos: todos })).toEqual(['error:site-todo'])
-    const staging = { ...deployable(), vars: { ...deployable().vars, APP_ENV: 'staging' } }
+    const staging = { ...deployable(), vars: { ...deployable().vars, APP_ENV: 'staging', INDEXABLE: 'false' } }
     expect(doctorKeys(staging, { siteTodos: todos })).toContain('warn:site-todo')
   })
 })

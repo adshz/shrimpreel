@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { ArticleCards } from '#/components/ArticleCards'
 import { Breadcrumbs, formatDay } from '#/components/ui'
-import { findArticle, relatedArticles, site } from '#/config/site'
+import { findArticle, isoTimestamp, relatedArticles, site } from '#/config/site'
 import { absoluteUrl, getContent, localeFromParam, pageHead, useContent, useLocale, useLocalePath } from '#/lib/i18n'
 import { articleJsonLd, breadcrumbJsonLd, jsonLdScript } from '#/lib/seo'
 
@@ -28,8 +28,8 @@ export const Route = createFileRoute('/{-$locale}/$slug')({
       meta: [
         ...head.meta,
         { property: 'og:type', content: 'article' },
-        { property: 'article:published_time', content: article.publishedAt },
-        { property: 'article:modified_time', content: article.updatedAt },
+        { property: 'article:published_time', content: isoTimestamp(article.publishedAt) },
+        { property: 'article:modified_time', content: isoTimestamp(article.updatedAt) },
         // 覆盖根路由的 og:image（同名 meta 去重后留下这里的）；宽高跟着重写，保证排在 og:image 后面。封面固定 1200×630
         ...(article.cover
           ? [

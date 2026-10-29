@@ -54,7 +54,7 @@ HowTo 富结果 Google 已下线，所以三步流程只用语义化有序列表
 | 法律页 description | 只重复标题（32 字符） | 独立描述（约 120 字符） |
 | 图片 alt | 首页 4 张为空 | 全部有描述 |
 | og:image 尺寸、og:image:alt、twitter:title/description | 无 | 有 |
-| sitemap lastmod | 无 | 文章取各自 `updatedAt`，`/guides` 取最新一篇，其余页面取 `site.seo.updatedAt` |
+| sitemap lastmod | 无 | 文章取各自 `updatedAt`，`/guides` 取最新一篇，其余页面取 `site.seo.pageUpdatedAt[路径]`（缺项直接报错），输出为完整 ISO 时间戳 |
 | `/pricing/` | TanStack 307 | 301 → `/pricing`（保留查询参数） |
 | HSTS | 无 | production + https 下发 |
 | 站长验证、IndexNow | 无 | `site.seo` 配置后自动输出 |
@@ -94,7 +94,7 @@ HowTo 富结果 Google 已下线，所以三步流程只用语义化有序列表
 1. `npm run seo:check -- --base https://<domain> --production`。
 2. Search Console 与 Bing Webmaster 验证（DNS 或填 `site.seo.googleVerification` / `bingVerification`），提交 `https://<domain>/sitemap.xml`。
 3. 配置了 IndexNow key 时运行 `npm run seo:indexnow -- --submit`。
-4. 热度变化后更新文案：改了哪篇文章就改 `site.articles` 里那篇的 `updatedAt`（页面"最后更新"、Article dateModified、sitemap lastmod 跟随）；改首页等站点页面时更新 `site.seo.updatedAt`。
+4. 热度变化后更新文案：改了哪篇文章就改 `site.articles` 里那篇的 `updatedAt`（页面"最后更新"、Article dateModified、sitemap lastmod 跟随）；改首页等站点页面时更新 `site.seo.pageUpdatedAt` 里对应的一项（只在正文真的改了时才改，不要写成部署日）。
 5. 新增文章：在 `site.articles` 加一条（key、slug、日期），再在两份文案的 `articles` 里加同名 key 的正文；`/guides`、页脚、sitemap、相关文章自动跟随。
 
 ## 未覆盖

@@ -59,6 +59,11 @@ describe.skipIf(!hasStaging)('wrangler.staging.jsonc', () => {
     }
   })
 
+  it('INDEXABLE：预发 false，两份配置都写了；正式站上线前默认 false', () => {
+    expect(staging.vars.INDEXABLE).toBe('false')
+    expect(main.vars.INDEXABLE).toBeDefined()
+  })
+
   it('按生产行为运行，不用 mock', () => {
     expect(staging.vars.APP_ENV).toBe('staging')
     for (const key of ['PAYMENT_PROVIDER', 'VIDEO_PROVIDER', 'MODERATION_PROVIDER']) expect(staging.vars[key], key).not.toBe('mock')
@@ -67,11 +72,15 @@ describe.skipIf(!hasStaging)('wrangler.staging.jsonc', () => {
 })
 
 describe('robots.txt', () => {
-  const robots = async (APP_ENV: string) => (await seoRoutes.request('/robots.txt', {}, { APP_ENV } as unknown as Env)).text()
+  const robots = async (APP_ENV: string, INDEXABLE?: string) => (await seoRoutes.request('/robots.txt', {}, { APP_ENV, INDEXABLE } as unknown as Env)).text()
 
   it('只有 production 允许抓取，staging 与正式站内容相同，必须整体禁止', async () => {
-    expect(await robots('production')).toMatch(/^Allow: \/$/m)
-    expect(await robots('staging')).toMatch(/^Disallow: \/$/m)
-    expect(await robots('development')).toMatch(/^Disallow: \/$/m)
+    expect(await robots('production', 'true')).toMatch(/^Allow: \/$/m)
+    expect(await robots('production', 'true')).toMatch(/^Sitemap: https:\/\/.+\/sitemap\.xml$/m)
+    expect(await robots('staging', 'false')).toMatch(/^Disallow: \/$/m)
+    expect(await robots('development', 'false')).toMatch(/^Disallow: \/$/m)
+    // 两个条件都要满足：staging 误配 INDEXABLE=true 不放行；正式站漏配 INDEXABLE 也不放行（doctor 会报错）
+    expect(await robots('staging', 'true')).toMatch(/^Disallow: \/$/m)
+    expect(await robots('production')).toMatch(/^Disallow: \/$/m)
   })
 })

@@ -71,8 +71,16 @@ export function isProduction(env: { APP_ENV?: string }) {
   return env.APP_ENV === 'production' || env.APP_ENV === 'staging'
 }
 
-export function isIndexable(env: { APP_ENV?: string }) {
-  return env.APP_ENV === 'production'
+// 可被收录要同时满足：INDEXABLE=true（wrangler vars，正式站 true、预发 false，doctor 核对）且 APP_ENV=production。
+// 两个条件取“与”：预发即使 INDEXABLE 误配成 true 也不会放行；正式站漏配 INDEXABLE 会被 doctor 报错
+export function isIndexable(env: { APP_ENV?: string; INDEXABLE?: string }) {
+  return env.INDEXABLE === 'true' && env.APP_ENV === 'production'
+}
+
+// staging：按生产行为运行但不许收录。robots.txt 的 Disallow 只防抓取，别处有链接时 URL 仍会被收进索引，
+// 所以所有响应再加 X-Robots-Tag: noindex。和 isIndexable 是同一个开关的两面，正式站不会带。本地开发不加，seo:check 才能对本地跑
+export function shouldNoindex(env: { APP_ENV?: string; INDEXABLE?: string }) {
+  return isProduction(env) && !isIndexable(env)
 }
 
 export function parseJsonRecord(value: string | undefined): Record<string, string> {
